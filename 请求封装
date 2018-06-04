@@ -1,0 +1,305 @@
+//基于ajax
+(function(window) {
+    var r = {};
+
+    var apiServer = your url;
+    // var apiServer = your url;
+
+    var myheaders;
+
+    r.userAgent = () => {
+        return `SC/${api.appVersion} (${api.deviceModel}/${api.systemType}/${api.systemVersion})`;
+    };
+
+    r.get = (url, callback, options = {}) => {
+
+        const { cache = true, timeout = 10, headers = {}, version = "1.0" } = options;
+
+        const { success, failure = r.failure } = callback;
+
+        if (!url.startsWith('http')) {
+          url = apiServer + url;
+        }
+
+        if(!$api.getStorage("token")){
+          myheaders = { Accept: `application/vnd.v${version}+json`, 'User-Agent': r.userAgent() }
+        }else{
+          myheaders = { Accept: `application/vndi.v${version}+json`, 'User-Agent': r.userAgent() ,'Authorization':`Bearer ${$api.getStorage("token")}`}
+        }
+
+        const allHeaders = Object.assign({}, headers,myheaders )
+
+        api.ajax({
+            url,
+            timeout,
+            headers: allHeaders,
+            method: 'get',
+            cache:true,
+        }, function(ret, err) {
+            if (ret) {
+                if (ret.code == 0) {
+                    success && success(ret);
+                } else {
+                    failure(ret.message);
+                }
+            } else {
+                failure(JSON.stringify(err));
+            }
+        })
+    };
+
+    r.post = (url,parameter,callback,options={})=>{
+
+      const{ timeout = 10 ,headers={} ,version = "1.0" } = options;
+
+      const { success, failure = r.failure } = callback;
+
+      if (!url.startsWith('http')) {
+        url = apiServer + url;
+      }
+
+      if(!$api.getStorage("token")){
+        myheaders = { Accept: `application/vnd.v${version}+json`, 'User-Agent': r.userAgent() }
+      }else{
+        myheaders = { Accept: `application/vnd.v${version}+json`, 'User-Agent': r.userAgent() ,'Authorization':`Bearer ${$api.getStorage("token")}`}
+      }
+
+      const allHeaders = Object.assign({}, headers,myheaders )
+
+      api.ajax({
+          url,
+          method: 'post',
+          data: {
+              values:
+                  parameter
+          },
+          timeout,
+          headers: allHeaders
+      },function(ret, err){
+          if(url.indexOf('login')>0||url.indexOf('register')>0||url.indexOf('assword')>0||url.indexOf('guess')>0||url.indexOf('update')>0||url.indexOf('verify')>0||url.indexOf('sms/')>0||url.indexOf('/email')>0){
+              success && success(ret)
+              return;
+          }else{
+              if (ret) {
+                if(ret.code == 0 ){
+                  success && success(ret)
+                }else{
+                  failure(ret.message)
+                }
+                return;
+              } else {
+                  failure(JSON.stringify(err))
+              }
+          }
+      });
+    };
+
+    r.failure = (err) => {
+    // alert(err+'我是错误信息')
+      if(err=="登录状态过期，请重新登录"){
+        //你的操作
+        $api.rmStorage('token')
+        $api.rmStorage('userInfo')
+        console.log('登录状态过期，请重新登录,41002')
+      }else if(err=="请登录"){
+      //你的操作
+        $api.rmStorage('token')
+        $api.rmStorage('userInfo')
+        console.log('请登录,-1,请登录')
+      }else if(err=="登录状态非法"){
+        $api.rmStorage('token')
+        $api.rmStorage('userInfo')
+        console.log('请登录,-1,登录状态非法')
+      }else if (err=="网络请求超时，请稍后重试"){
+        api.openFrame({
+            name: 'reload',
+            url: '../html/reload.html',
+            rect: {
+                x: 0,
+                y: 0,
+                w: 'auto',
+                h: 'auto'
+            },
+        });
+      }else if (err=="连接错误，请检查网络或者请求配置是否正确"){
+        api.openFrame({
+            name: 'reload',
+            url: '../html/reload.html',
+            rect: {
+                x: 0,
+                y: 0,
+                w: 'auto',
+                h: 'auto'
+            },
+        });
+      }else{
+        api.toast({
+            msg: err,
+            duration: 2000,
+            location: 'bottom'
+        });
+      }
+    };
+
+    r.standardFailure = (ret) => {
+        switch (ret.code) {
+            case 41000:
+                break;
+            case -1:
+                $api.rmStorage('token')
+                $api.rmStorage('userInfo')
+                api.openFrame({
+                    name: 'login',
+                    url:'../html/loginregister/login'
+                })
+            case 41001:
+                break;
+            case 41002:
+                $api.rmStorage('token')
+                $api.rmStorage('userInfo')
+                api.openFrame({
+                    name: 'login',
+                    url:'../html/loginregister/login'
+                })
+                break;
+            case 404:
+                break;
+            case 403:
+                break;
+            case -200:
+                break;
+            case 41005:
+                break;
+            default:
+                break;
+        }
+    }
+    window.$request = r;
+})(window);
+
+//基于axios(vue)
+import axios from "axios";
+import _ from "lodash";
+import Qs from "qs";
+import config from "./http-config";
+
+import store from "./../Store";
+
+import {
+    setStore,
+    getStore,
+    removeStore,
+    getCookie,
+    removeCookie,
+    setCookie
+} from "./../utils/storage.js";
+
+const client = axios.create(config);
+
+function requestConfig(ver, headers = {}) {
+    var clientConfig = {
+        transformResponse: [
+            function(data) {
+                process.env.NODE_ENV === "dev" &&
+                    console.log("返回数据： ", JSON.parse(data));
+
+                return JSON.parse(data);
+            }
+        ],
+        headers: {
+            // 网站请求头
+            Accept: `application/vnd.v${ver}+json`
+                // 'Authorization':'Bearer ' + getCookie('cid')
+        },
+        withCredentials: true
+    };
+
+    if (!_.isEmpty(headers)) {
+        clientConfig.headers = Object.assign(clientConfig.headers, headers);
+    }
+
+    return clientConfig;
+}
+
+export default class Http {
+    static get(uri, params = {}, version = "1.0") {
+        uri += _.isEmpty(params) ? "" : "?" + Qs.stringify(params);
+        let _self = this;
+        return client.get(uri, requestConfig(version)).then(function(response) {
+            return _self.checkCode(response, uri);
+        });
+    }
+
+    static post(uri, params = {}, version = "1.0") {
+        return client
+            .post(
+                uri,
+                Qs.stringify(params),
+                requestConfig(version, {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                })
+            )
+            .then(this.checkCode);
+    }
+
+    static checkCode(response, uri) {
+        // 错误提示，弹出登录框等
+        let whiteList = /self|cardLogs|dailyTask|marqueeLogs|cardDetail|caiDetail/i;
+        let checkLogin = true;
+        if (typeof uri !== "undefined" && uri.search(whiteList) !== -1) {
+            checkLogin = false;
+        }
+        var code = response.data.code;
+        let datas = response,
+            phonenum,
+            phoneText;
+        let updateList = /login|recharge|exchangeProduct|giveProduct|updateAvatar|updateNickname|checkIn|getCheckInReward/i;
+        if (
+            typeof uri !== "undefined" &&
+            uri.search(updateList) !== -1 &&
+            code === 0
+        ) {
+            store.dispatch("userinfo");
+            store.dispatch("userinfoshowdispatch");
+            store.dispatch("userInfo");
+            store.dispatch("self");
+            console.log("需要更新用户信息", uri, uri.search(updateList));
+        }
+        let _this = this;
+        if (code != 0) {
+            switch (code) {
+                case 41000: //参数验证错误
+                    break;
+                case 41001: //业务逻辑错误
+                    break;
+                case 41002: //登录超时
+                    break;
+                case -1: //
+                    //checkLogin == true && console.log('登录弹窗', uri)
+                    store.commit("login", false);
+                    // removeCookie('cid')
+                    checkLogin == true &&
+                        store.commit("showLoginDialog", true) &&
+                        removeCookie("cid");
+                    // store.dispatch("logout")
+                    break;
+                case 404: //路由错误
+                    break;
+                case 403: //无权操作
+                    break;
+                case -200:
+                    break;
+                case 41005:
+                    break;
+            }
+            //console.log("code:" + code, response.data.message);
+        }
+
+        return response;
+    }
+
+    static onError(error) {
+        console.log(error);
+    }
+}
