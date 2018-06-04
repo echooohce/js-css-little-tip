@@ -1,0 +1,22 @@
+<script>
+  startTimer() {
+      let that = this;
+      clearInterval(that.timeOut);
+      that.timeOut = setInterval(function() {
+        that.$store.dispatch("logout");
+        that.showdwtabs = false;
+        setTimeout(() => {
+          window.location.reload();
+        }, 600);
+      }, 1000 * 60 * 30);
+    }
+    isTimeOut() {
+      let that = this;
+      document.body.onmouseup = that.startTimer;
+      document.body.onmousemove = that.startTimer;
+      document.body.onkeyup = that.startTimer;
+      document.body.onclick = that.startTimer;
+      document.body.ontouchend = that.startTimer;
+    }
+</script>
+tip:页面鼠标在特定时间内没有点击，经过等事件时，可进行的操作。
