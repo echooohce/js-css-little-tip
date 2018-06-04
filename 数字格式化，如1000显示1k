@@ -1,0 +1,15 @@
+<script>
+  numFormatter(num){
+        if(num>=1000000000){
+          return (num/1000000000).toFixed(1).replace(/.0$/,'')+'G'
+        }
+        if (num >= 1000000) {
+          return (num/1000000).toFixed(1).replace(/.0$/, '') + 'M';
+        }
+      if (num >= 1000) {
+          return (num/1000).toFixed(1).replace(/.0$/, '') + 'K';
+        }
+        return num;
+      }
+</script>
+tip:超过1000的数字显示以k显示，以此类推。如1000=》1k
