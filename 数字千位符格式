@@ -1,0 +1,8 @@
+<script>
+  thousandBitSeparator(num){
+      return (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,');
+    }
+</script>
+tip:只需要在转换的地位调用该函数，thousandBitSeparator(1530)=>1.530
+其实num.toLocalString（）也是可以的，但是会有兼容问题，在部分浏览器上末尾会多出三个零，
+tip: 1530.toLocalString()=>部分浏览器显示：1.530.000
