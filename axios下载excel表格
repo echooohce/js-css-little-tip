@@ -1,0 +1,19 @@
+1，cnpm i axios
+2, import axios from axios;
+3,点击导出按钮请求后台文件接口
+  axios.get('yoururl',{
+    //params
+    header,
+    responseType: 'blob',
+  }).then(res=>{
+    //application/vnd.openxmlformats-officedocument.spreadsheetml.sheet这里表示xlsx类型
+    var blob = new Blob([res.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'}); 
+    var downloadElement = document.createElement('a');
+    var href = window.URL.createObjectURL(blob); //创建下载的链接
+    downloadElement.href = href;//设置a标签链接
+    downloadElement.download = 'test.xlsx'; //下载后excel文件名
+    document.body.appendChild(downloadElement);//将a标签插入到dom
+    downloadElement.click(); //点击下载
+    document.body.removeChild(downloadElement); //下载完成移除元素
+    window.URL.revokeObjectURL(href); //释放掉blob对象 
+  })
