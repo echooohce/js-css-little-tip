@@ -1,0 +1,7 @@
+1，纯css三角形
+  /* 箭头指向哪边，就不设置该方向的边框 */
+  width: 0;
+  height: 0;
+  border-top: .5px solid transparent;
+  border-left: 1px solid #f99;
+  border-bottom: .5px solid transparent;
