@@ -1,0 +1,5 @@
+var endTime = new Date("2018-06-29 18:04:59") ;
+var curTime = new Date();
+var res = endTime.getTime()-curTime.getTime();
+res = Math.round(res/1000);
+res<0 ? console.log('时间已过期') : console.log('还没过期呢') ;
