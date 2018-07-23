@@ -1,0 +1,23 @@
+function strIntercept(str){//用户名-限制
+  let reg =/[\u4e00-\u9fa5]/;
+  let a,b,newstr;
+  if(reg.test(str)){
+    if(str.length<=5){
+        return str;
+    }else{
+      a=str.substr(0,2);
+      b=str.substr(str.length-1,1);
+      newstr = a  + '***' +b;
+      return newstr;
+    }
+  }else{
+    if(str.length<=10){
+      return str;
+    }else{
+      a = str.substr(0,5);
+      b = str.substr(str.length-1,1);
+      newstr = a + '***' + b;
+      return newstr;
+    }
+  }
+}
