@@ -1,0 +1,26 @@
+getWeekOfYear = () => {
+    const today = new Date();
+    let firstDay = new Date(today.getFullYear(), 0, 1);
+    const currentYear = today.getFullYear();
+    const dayOfWeek = firstDay.getDay();
+    let spendDay = 1;
+    if (dayOfWeek != 0) {
+      spendDay = 7 - dayOfWeek + 1;
+    }
+    firstDay = new Date(today.getFullYear(), 0, 1 + spendDay);
+    const d = Math.ceil((today.valueOf() - firstDay.valueOf()) / 86400000);
+    let result = Math.ceil(d / 7);
+
+    if (result.toString().length <= 1) {
+      result = `0${result}`;
+    }
+    const weekAndYear = `${currentYear}-${result}`;
+    this.setState(
+      {
+        ...this.state,
+        week: weekAndYear,
+      },
+      () => this.fetchList()
+    );
+    return `${currentYear}-${result}`;
+};
